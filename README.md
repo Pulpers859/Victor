@@ -18,8 +18,11 @@ Victor/
 ├── docs/
 │   ├── foundation/
 │   ├── intake/
+│   ├── playbooks/
 │   ├── product/
 │   └── sources/
+├── artifacts/
+├── scripts/
 ├── victor_sterling_financial_project_continuation_brief.md
 ├── victor_sterling_financial_advisor_ARTIFACT_v3.html
 ├── PROJECT_HANDOFF.md
@@ -42,6 +45,7 @@ Victor is not a generic budgeting bot. He is meant to be a physician-specific fi
 - The constitutional source library is present in `Brains/`.
 - A browser-based intake/triage artifact exists in [victor_sterling_financial_advisor_ARTIFACT_v3.html](/C:/Dev/Victor/victor_sterling_financial_advisor_ARTIFACT_v3.html).
 - A spreadsheet-first workflow spec lives in [VICTOR_WORKBOOK_SPEC.md](/C:/Dev/Victor/docs/product/VICTOR_WORKBOOK_SPEC.md), and the workbook can be generated from `scripts/create_victor_workbook.py`.
+- A markdown interpretation layer for the workbook lives in [docs/playbooks/README.md](/C:/Dev/Victor/docs/playbooks/README.md).
 - The repo foundation and internal document architecture are now in place for future product work.
 
 ## Suggested Build Order

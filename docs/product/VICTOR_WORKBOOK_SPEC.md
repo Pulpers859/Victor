@@ -22,6 +22,8 @@ The first hard problem Victor needs to solve is structured physician-financial t
 
 Spreadsheet is the right first tool because it is stronger than markdown for numeric intake and more reliable than the current HTML artifact for day-to-day use.
 
+The interpretation rules for this workbook live in [docs/playbooks/README.md](/C:/Dev/Victor/docs/playbooks/README.md). The workbook should not be used without that reading layer.
+
 ## Workbook Design Principles
 
 - physician-specific, not generic high-earner finance

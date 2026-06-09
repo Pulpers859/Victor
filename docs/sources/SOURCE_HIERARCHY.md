@@ -12,9 +12,11 @@ This project should be built with a strict authority order so Victor stays consi
    Distilled operating doctrine and reusable assistant rules.
 4. `docs/intake/`
    Intake sequencing, discovery logic, and planning frameworks.
-5. `docs/product/`
+5. `docs/playbooks/`
+   Rules for interpreting downstream workbook and workflow surfaces without treating them as doctrine.
+6. `docs/product/`
    Product architecture, roadmap, and build direction.
-6. Product surfaces and artifacts
+7. Product surfaces and artifacts
    HTML tools, spreadsheets, prompts, exports, audits, and future apps all sit beneath the doctrine layer.
 
 ## Usage Rule
