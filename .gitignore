@@ -1,0 +1,35 @@
+# OS / editor noise
+Thumbs.db
+.DS_Store
+Desktop.ini
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Temporary and backup files
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+*.swp
+*.swo
+
+# Office lock files
+~$*.xlsx
+~$*.xlsm
+~$*.docx
+~$*.pptx
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Node noise
+node_modules/
+
+# Local exports / scratch work
+exports/
+scratch/
