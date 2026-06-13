@@ -11,10 +11,11 @@
 
 ## Repo State
 - Stable branch: `main`
-- Working branch: `dev`
-- Expected default branch for normal work: `dev`
+- Working branch: `main`
+- Expected default branch for normal work: `main`
 - Sync-first rule: `Before normal work, fetch from the remote first. If the working tree is clean and the active branch tracks the expected upstream, pull with --ff-only before editing. If local changes exist, fetch and reconcile instead of blindly pulling.`
 - If Git is not set up yet for this project, the agent should bootstrap it before doing major feature work.
+- Git branch policy: `This repository is main-only unless the user explicitly instructs otherwise. Do not create or use side branches, dev branches, feature branches, or pull-request flow by default.`
 
 ## PowerShell / Terminal Standard
 - Do not globally pin every PowerShell session to this project.
@@ -36,7 +37,8 @@
 - Do not let derivative prompt files or UI artifacts outrank the master continuation brief.
 - Treat physician-specific finance as the core domain, not a generic high-income-finance clone.
 - Verify current tax, retirement, and student-loan rules from official sources before giving live recommendations.
-- Keep normal work on `dev`, not `main`.
+- Keep normal work on `main`.
+- Do not create or use side branches unless the user explicitly says to.
 - Audit adjacent risks after making changes.
 - Run realistic local checks before handoff.
 
@@ -65,7 +67,7 @@ Project: Victor
 Active repo path: C:\Dev\Victor
 GitHub remote: https://github.com/Pulpers859/Victor.git
 Stable branch: main
-Working branch: dev
+Working branch: main
 
 Important:
 - Treat C:\Dev\Victor as the source of truth.
@@ -73,6 +75,7 @@ Important:
 - The Brains folder is the doctrinal library immediately beneath the master file.
 - All future prompts, workflows, UI surfaces, and assistant behavior should derive from those sources instead of drifting into generic personal-finance advice.
 - If Git is already set up, fetch first before normal work.
-- Keep normal work on dev unless explicitly told otherwise.
+- Use main as the normal working branch.
+- Do not create or use side branches, dev branches, or PR flow unless the user explicitly instructs that exception.
 - Before implementing live financial logic, separate timeless doctrine from current-law dependencies.
 ```

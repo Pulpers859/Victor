@@ -2,6 +2,8 @@
 
 Victor is an early-stage AI financial assistant designed for physicians and physician trainees.
 
+Git policy for this repo: `main` is the only normal working branch. Do not use `dev`, feature branches, or PR flow unless the user explicitly asks for that exception.
+
 The project is built around one non-negotiable hierarchy:
 
 1. The master source of truth is [victor_sterling_financial_project_continuation_brief.md](/C:/Dev/Victor/victor_sterling_financial_project_continuation_brief.md).
@@ -15,6 +17,7 @@ Victor/
 ├── Brains/
 │   ├── README.md
 │   └── physician-finance source PDFs
+├── AGENTS.md
 ├── docs/
 │   ├── foundation/
 │   ├── intake/
@@ -43,6 +46,7 @@ Victor is not a generic budgeting bot. He is meant to be a physician-specific fi
 
 - The master continuation brief is present.
 - The constitutional source library is present in `Brains/`.
+- The repo is intentionally `main`-only for normal work. Side branches and PR flow are off-limits unless explicitly requested by the user.
 - A browser-based intake/triage artifact exists in [victor_sterling_financial_advisor_ARTIFACT_v3.html](/C:/Dev/Victor/victor_sterling_financial_advisor_ARTIFACT_v3.html).
 - A spreadsheet-first workflow spec lives in [VICTOR_WORKBOOK_SPEC.md](/C:/Dev/Victor/docs/product/VICTOR_WORKBOOK_SPEC.md), and the workbook can be generated from `scripts/create_victor_workbook.py`.
 - A markdown interpretation layer for the workbook lives in [docs/playbooks/README.md](/C:/Dev/Victor/docs/playbooks/README.md).
