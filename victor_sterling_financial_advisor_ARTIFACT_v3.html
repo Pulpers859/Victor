@@ -3,63 +3,385 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0f14">
+<meta name="description" content="Victor Sterling Wealth Triage Console — physician-specific financial intake, triage, and AI prompt generator. All data stays in your browser.">
 <title>Victor Sterling — Wealth Triage Console v3</title>
 <style>
-:root{--bg:#0b0f14;--panel:#121a24;--panel2:#0e151d;--line:#263646;--text:#eef3f8;--muted:#9dadbd;--gold:#d7b46a;--blue:#7bb2ff;--red:#ff7777;--green:#69d18c;--yellow:#ffd86e}*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#0b0f14,#111a25 45%,#070a0e);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.45}.wrap{max-width:1150px;margin:auto;padding:18px}.hero{border-bottom:1px solid var(--line);background:rgba(11,15,20,.92);position:sticky;top:0;z-index:5;backdrop-filter:blur(10px)}h1{margin:0;font-size:clamp(1.35rem,4vw,2.25rem)}.sub{color:var(--muted);margin:.25rem 0 0}.grid{display:grid;grid-template-columns:320px 1fr;gap:18px;margin-top:18px}@media(max-width:850px){.grid{grid-template-columns:1fr}}.card{background:rgba(18,26,36,.96);border:1px solid var(--line);border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.3);overflow:hidden}.head{padding:16px 18px;border-bottom:1px solid var(--line);font-weight:800}.body{padding:18px}.nav button{display:block;width:100%;margin:0 0 8px;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:12px;padding:12px;text-align:left;font-weight:800;cursor:pointer}.nav button.active{border-color:var(--gold);background:rgba(215,180,106,.13);color:#ffe4a3}label{display:block;margin:12px 0 5px;font-size:.88rem;font-weight:800;color:#d8e2eb}input,select,textarea{width:100%;border:1px solid var(--line);background:#091017;color:var(--text);border-radius:11px;padding:11px;font:inherit}textarea{min-height:82px;resize:vertical}.twocol{display:grid;grid-template-columns:1fr 1fr;gap:12px}.threecol{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}@media(max-width:650px){.twocol,.threecol{grid-template-columns:1fr}}.btn{border:0;border-radius:12px;background:var(--gold);color:#17130a;font-weight:900;padding:11px 14px;cursor:pointer;margin:6px 6px 6px 0}.btn2{background:#1b2836;color:var(--text);border:1px solid var(--line)}.btnRed{background:rgba(255,119,119,.15);color:#ffd4d4;border:1px solid rgba(255,119,119,.5)}.section{display:none}.section.active{display:block}.callout{border:1px solid rgba(123,178,255,.35);background:rgba(123,178,255,.09);border-radius:14px;padding:13px;margin:12px 0;color:#d7e8ff}.gold{border-color:rgba(215,180,106,.45);background:rgba(215,180,106,.1);color:#f3dfad}.red{border-color:rgba(255,119,119,.45);background:rgba(255,119,119,.1);color:#ffd4d4}.green{border-color:rgba(105,209,140,.45);background:rgba(105,209,140,.1);color:#d5f8df}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}@media(max-width:850px){.kpis{grid-template-columns:repeat(2,1fr)}}@media(max-width:500px){.kpis{grid-template-columns:1fr}}.kpi{background:#091017;border:1px solid var(--line);border-radius:14px;padding:14px}.num{font-size:1.35rem;font-weight:950}.muted{color:var(--muted);font-size:.85rem}.good{color:var(--green)}.warn{color:var(--yellow)}.bad{color:var(--red)}pre{white-space:pre-wrap;background:#070c11;border:1px solid var(--line);border-radius:14px;padding:14px;max-height:520px;overflow:auto;font-size:.86rem}.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 9px;margin:4px;background:#091017;color:var(--muted);font-size:.8rem}.status{min-height:24px;color:#bff3cf;font-size:.9rem;margin-top:8px}.small{font-size:.82rem;color:var(--muted)}noscript{display:block;background:#4a1111;color:#fff;padding:14px;text-align:center;font-weight:800}
+:root{
+  --bg:#0b0f14;--panel:#121a24;--panel2:#0e151d;--field:#091017;
+  --line:#263646;--line2:#314454;
+  --text:#eef3f8;--muted:#9dadbd;
+  --gold:#d7b46a;--blue:#7bb2ff;--red:#ff7777;--green:#69d18c;--yellow:#ffd86e;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:linear-gradient(135deg,#0b0f14,#111a25 45%,#070a0e);
+  background-attachment:fixed;color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  line-height:1.45;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1150px;margin:auto;padding:18px}
+.hero{
+  border-bottom:1px solid var(--line);background:rgba(11,15,20,.92);
+  position:sticky;top:0;z-index:5;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+h1{margin:0;font-size:clamp(1.35rem,4vw,2.25rem);letter-spacing:-.01em}
+.sub{color:var(--muted);margin:.25rem 0 0}
+.grid{display:grid;grid-template-columns:320px 1fr;gap:18px;margin-top:18px}
+@media(max-width:850px){.grid{grid-template-columns:1fr}}
+.card{
+  background:rgba(18,26,36,.96);border:1px solid var(--line);border-radius:18px;
+  box-shadow:0 18px 50px rgba(0,0,0,.3);overflow:hidden;
+}
+.head{padding:16px 18px;border-bottom:1px solid var(--line);font-weight:800;letter-spacing:.01em}
+.body{padding:18px}
+.nav button{
+  display:flex;align-items:center;gap:8px;width:100%;margin:0 0 8px;
+  border:1px solid var(--line);background:var(--panel2);color:var(--text);
+  border-radius:12px;padding:12px;text-align:left;font-weight:800;cursor:pointer;
+  transition:border-color .15s,background .15s,transform .05s;
+}
+.nav button:hover{border-color:var(--line2);background:#13202c}
+.nav button:active{transform:translateY(1px)}
+.nav button.active{border-color:var(--gold);background:rgba(215,180,106,.13);color:#ffe4a3}
+.nav .step{
+  display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;
+  border-radius:999px;border:1px solid var(--line2);font-size:.78rem;color:var(--muted);flex:0 0 auto;
+}
+.nav button.active .step{border-color:var(--gold);color:#ffe4a3}
+label{display:block;margin:12px 0 5px;font-size:.88rem;font-weight:800;color:#d8e2eb}
+input,select,textarea{
+  width:100%;border:1px solid var(--line);background:var(--field);color:var(--text);
+  border-radius:11px;padding:11px;font:inherit;transition:border-color .15s,box-shadow .15s;
+}
+input:hover,select:hover,textarea:hover{border-color:var(--line2)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(215,180,106,.18)}
+input::placeholder,textarea::placeholder{color:#5d6e7e}
+textarea{min-height:82px;resize:vertical}
+.field-note{font-size:.74rem;color:var(--muted);margin:4px 0 0}
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.threecol{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:650px){.twocol,.threecol{grid-template-columns:1fr}}
+.btn{
+  border:0;border-radius:12px;background:var(--gold);color:#17130a;font-weight:900;
+  padding:11px 16px;cursor:pointer;margin:6px 6px 6px 0;min-height:44px;
+  transition:filter .15s,transform .05s;
+}
+.btn:hover{filter:brightness(1.06)}
+.btn:active{transform:translateY(1px)}
+.btn2{background:#1b2836;color:var(--text);border:1px solid var(--line)}
+.btn2:hover{filter:none;border-color:var(--line2);background:#22303f}
+.btnRed{background:rgba(255,119,119,.15);color:#ffd4d4;border:1px solid rgba(255,119,119,.5)}
+.btnRed:hover{filter:none;background:rgba(255,119,119,.22)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.section{display:none;animation:fade .25s ease}
+.section.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.callout{
+  border:1px solid rgba(123,178,255,.35);background:rgba(123,178,255,.09);
+  border-radius:14px;padding:13px;margin:12px 0;color:#d7e8ff;
+}
+.callout b{color:#fff}
+.gold{border-color:rgba(215,180,106,.45);background:rgba(215,180,106,.1);color:#f3dfad}
+.red{border-color:rgba(255,119,119,.45);background:rgba(255,119,119,.1);color:#ffd4d4}
+.green{border-color:rgba(105,209,140,.45);background:rgba(105,209,140,.1);color:#d5f8df}
+.callout .tag{font-weight:900;text-transform:uppercase;letter-spacing:.04em;font-size:.72rem;opacity:.85;margin-right:6px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:850px){.kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.kpis{grid-template-columns:1fr}}
+.kpi{background:var(--field);border:1px solid var(--line);border-radius:14px;padding:14px}
+.num{font-size:1.35rem;font-weight:950;line-height:1.1}
+.kpi .muted{margin-top:3px}
+.muted{color:var(--muted);font-size:.85rem}
+.good{color:var(--green)}
+.warn{color:var(--yellow)}
+.bad{color:var(--red)}
+.bar{height:6px;border-radius:999px;background:#0a141d;border:1px solid var(--line);margin-top:10px;overflow:hidden}
+.bar > span{display:block;height:100%;border-radius:999px;background:var(--gold);transition:width .4s ease}
+.bar.good > span{background:var(--green)}
+.bar.warn > span{background:var(--yellow)}
+.bar.bad > span{background:var(--red)}
+pre{
+  white-space:pre-wrap;word-break:break-word;background:#070c11;border:1px solid var(--line);
+  border-radius:14px;padding:14px;max-height:520px;overflow:auto;font-size:.86rem;
+}
+.pill{
+  display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 9px;
+  margin:4px;background:var(--field);color:var(--muted);font-size:.8rem;
+}
+.pill.good{color:var(--green);border-color:rgba(105,209,140,.4)}
+.status{min-height:22px;color:#bff3cf;font-size:.9rem;margin-top:10px}
+.small{font-size:.82rem;color:var(--muted)}
+h3{margin:18px 0 6px;font-size:1.02rem}
+#toast{
+  position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(16px);
+  background:#0e151d;border:1px solid var(--gold);color:#ffe4a3;padding:12px 18px;
+  border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);opacity:0;pointer-events:none;
+  transition:opacity .22s,transform .22s;z-index:50;font-weight:800;max-width:90vw;text-align:center;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+noscript{display:block;background:#4a1111;color:#fff;padding:14px;text-align:center;font-weight:800}
+@media print{
+  .hero,.nav,.btn,#toast{display:none!important}
+  body{background:#fff;color:#000}
+  .card{box-shadow:none;border-color:#ccc}
+  .section{display:block!important}
+}
 </style>
 </head>
 <body>
-<noscript>JavaScript is disabled in this viewer. Open this file in Safari/Chrome or download it locally for the buttons and triage to work.</noscript>
-<header class="hero"><div class="wrap"><h1>Victor Sterling — Wealth Triage Console v3</h1><p class="sub">Physician-friendly financial intake, triage, and GPT prompt generator. Built with plain JavaScript and direct button handlers.</p></div></header>
+<noscript>JavaScript is disabled in this viewer. Open this file in Safari, Chrome, or Edge — the triage and buttons need JavaScript.</noscript>
+
+<header class="hero"><div class="wrap">
+  <h1>Victor Sterling — Wealth Triage Console</h1>
+  <p class="sub">Physician-specific financial intake, triage, and AI advisor-prompt generator.</p>
+</div></header>
+
 <div class="wrap grid">
-<aside class="card"><div class="head">Console</div><div class="body"><p class="small"><b>Victor principle:</b> protect against ruin, capture guaranteed returns, build liquidity, maximize tax-advantaged compounding, then optimize.</p><div class="nav"><button id="nav_intake" class="active" onclick="showSection('intake')">1. Client Intake</button><button id="nav_triage" onclick="showSection('triage')">2. Financial Triage</button><button id="nav_prompt" onclick="showSection('prompt')">3. GPT Prompt</button><button id="nav_framework" onclick="showSection('framework')">4. Plan Framework</button></div><p class="small">If buttons do not work inside the ChatGPT preview, download/open the file directly in Safari or Chrome. Some in-app viewers disable JavaScript.</p></div></aside>
-<main class="card"><div class="head" id="title">Client Intake</div><div class="body">
-<section id="intake" class="section active">
-<div class="callout">Fill what you know. Blank fields are intentionally carried forward as missing data so Victor does not fake precision.</div>
-<div class="twocol"><div><label>Location / tax jurisdiction</label><input id="location" placeholder="e.g., Pennsylvania, USA"></div><div><label>Age</label><input id="age" type="number" placeholder="31"></div><div><label>Household status</label><select id="household"><option value="">Select</option><option>Single</option><option>Married filing jointly</option><option>Married filing separately</option><option>Head of household</option><option>Other / unsure</option></select></div><div><label>Dependents</label><input id="dependents" placeholder="None, spouse, children, parents"></div><div><label>Gross household income</label><input id="income" type="number" placeholder="Annual pre-tax"></div><div><label>Income stability</label><select id="stability"><option value="">Select</option><option>Very stable</option><option>Mostly stable</option><option>Variable</option><option>Unstable / at risk</option></select></div></div>
-<label>Current assets by account type</label><textarea id="assets" placeholder="Checking, HYSA, 401k/403b, Roth IRA, taxable, HSA, real estate equity, etc."></textarea>
-<label>Current debts and interest rates</label><textarea id="debts" placeholder="Credit cards, student loans, car, mortgage; include balances and rates."></textarea>
-<div class="threecol"><div><label>Monthly savings / investing</label><input id="monthlySave" type="number" placeholder="$ / month"></div><div><label>Emergency fund</label><input id="efund" type="number" placeholder="$ liquid cash"></div><div><label>Monthly spending</label><input id="spending" type="number" placeholder="$ expenses"></div></div>
-<label>Employer benefits / retirement options</label><textarea id="benefits" placeholder="401k/403b match, pension, HSA, disability, 457, mega backdoor Roth, etc."></textarea>
-<label>Investment experience and risk tolerance</label><textarea id="risk" placeholder="Prior investing, panic selling history, comfort with major drawdowns."></textarea>
-<label>Major goals and timelines</label><textarea id="goals" placeholder="Retirement age, home, kids, debt freedom, FIRE, business, etc."></textarea>
-<label>Real estate ownership or plans</label><textarea id="realEstate" placeholder="Rent/own, mortgage terms, rental plans, purchase timing."></textarea>
-<label>Constraints / liquidity needs</label><textarea id="constraints" placeholder="Upcoming expenses, family obligations, risk limits, ethical screens."></textarea>
-<button class="btn" onclick="saveAndRun()">Save & Run Triage</button><button class="btn btn2" onclick="loadDemo()">Load Demo</button><button class="btn btnRed" onclick="clearData()">Clear</button><button class="btn btn2" onclick="testClick()">Test Button</button><div id="status" class="status"></div>
-</section>
-<section id="triage" class="section"><div id="kpis" class="kpis"></div><div id="triageNotes"></div><h3>Missing Data</h3><div id="missing"></div><h3>Risk Capacity vs Risk Tolerance</h3><div id="riskBox" class="callout gold"></div><button class="btn" onclick="buildPrompt();showSection('prompt')">Build GPT Prompt</button><button class="btn btn2" onclick="showSection('intake')">Back to Intake</button></section>
-<section id="prompt" class="section"><div class="callout gold">Copy this into ChatGPT to run Victor as a financial advisor persona using your structured intake.</div><button class="btn" onclick="copyPrompt()">Copy Prompt</button><button class="btn btn2" onclick="downloadPrompt()">Download Prompt</button><pre id="promptOut"></pre></section>
-<section id="framework" class="section"><div class="callout">This is the output structure Victor should use when analyzing your finances.</div><pre id="frameworkOut"></pre></section>
-</div></main></div>
+<aside class="card">
+  <div class="head">Console</div>
+  <div class="body">
+    <p class="small"><b style="color:var(--gold)">Victor's order of operations:</b> protect against ruin, capture guaranteed returns, secure income (disability), build liquidity, maximize tax-advantaged compounding — then optimize.</p>
+    <nav class="nav" role="tablist" aria-label="Workflow steps">
+      <button id="nav_intake" class="active" role="tab" aria-selected="true" aria-controls="intake" onclick="showSection('intake')"><span class="step">1</span> Client Intake</button>
+      <button id="nav_triage" role="tab" aria-selected="false" aria-controls="triage" onclick="showSection('triage')"><span class="step">2</span> Financial Triage</button>
+      <button id="nav_prompt" role="tab" aria-selected="false" aria-controls="prompt" onclick="showSection('prompt')"><span class="step">3</span> AI Advisor Prompt</button>
+      <button id="nav_framework" role="tab" aria-selected="false" aria-controls="framework" onclick="showSection('framework')"><span class="step">4</span> Plan Framework</button>
+    </nav>
+    <div class="callout green" style="margin-bottom:0">
+      <span class="tag">Private</span> Everything you type stays in <b>this browser</b> (local storage only). Nothing is uploaded, sent, or shared.
+    </div>
+  </div>
+</aside>
+
+<main class="card">
+  <div class="head" id="title">Client Intake</div>
+  <div class="body">
+
+  <section id="intake" class="section active" role="tabpanel" aria-labelledby="nav_intake">
+    <div class="callout">Fill in what you know. Blank fields are deliberately carried forward as <b>missing data</b> so Victor never fakes precision.</div>
+    <div class="twocol">
+      <div><label for="location">Location / tax jurisdiction</label><input id="location" autocomplete="off" placeholder="e.g., Pennsylvania, USA"></div>
+      <div><label for="age">Age</label><input id="age" type="number" min="0" max="120" inputmode="numeric" autocomplete="off" placeholder="31"></div>
+      <div><label for="household">Household status</label><select id="household"><option value="">Select</option><option>Single</option><option>Married filing jointly</option><option>Married filing separately</option><option>Head of household</option><option>Other / unsure</option></select></div>
+      <div><label for="dependents">Dependents</label><input id="dependents" autocomplete="off" placeholder="None, spouse, children, parents"></div>
+      <div><label for="income">Gross household income</label><input id="income" type="text" inputmode="decimal" autocomplete="off" placeholder="Annual pre-tax, e.g. 155,000"><p class="field-note">Dollar signs, commas, and shorthand like "155k" are fine.</p></div>
+      <div><label for="stability">Income stability</label><select id="stability"><option value="">Select</option><option>Very stable</option><option>Mostly stable</option><option>Variable</option><option>Unstable / at risk</option></select></div>
+    </div>
+    <label for="assets">Current assets by account type</label><textarea id="assets" autocomplete="off" placeholder="Checking, HYSA, 401k/403b, Roth IRA, taxable, HSA, real estate equity, etc."></textarea>
+    <label for="debts">Current debts and interest rates</label><textarea id="debts" autocomplete="off" placeholder="Credit cards, student loans, car, mortgage; include balances and rates (e.g. 'car $12,000 at 5.9%')."></textarea>
+    <div class="threecol">
+      <div><label for="monthlySave">Monthly savings / investing</label><input id="monthlySave" type="text" inputmode="decimal" autocomplete="off" placeholder="$ / month"></div>
+      <div><label for="efund">Emergency fund</label><input id="efund" type="text" inputmode="decimal" autocomplete="off" placeholder="$ liquid cash"></div>
+      <div><label for="spending">Monthly spending</label><input id="spending" type="text" inputmode="decimal" autocomplete="off" placeholder="$ expenses"></div>
+    </div>
+    <label for="benefits">Employer benefits / retirement options</label><textarea id="benefits" autocomplete="off" placeholder="401k/403b match, pension, HSA, disability, 457, mega backdoor Roth, etc."></textarea>
+    <label for="risk">Investment experience and risk tolerance</label><textarea id="risk" autocomplete="off" placeholder="Prior investing, panic-selling history, comfort with major drawdowns."></textarea>
+    <label for="goals">Major goals and timelines</label><textarea id="goals" autocomplete="off" placeholder="Retirement age, home, kids, debt freedom, FIRE, business, etc."></textarea>
+    <label for="realEstate">Real estate ownership or plans</label><textarea id="realEstate" autocomplete="off" placeholder="Rent/own, mortgage terms, rental plans, purchase timing."></textarea>
+    <label for="constraints">Constraints / liquidity needs</label><textarea id="constraints" autocomplete="off" placeholder="Upcoming expenses, family obligations, risk limits, ethical screens."></textarea>
+    <div style="margin-top:14px">
+      <button class="btn" onclick="saveAndRun()">Save &amp; Run Triage</button>
+      <button class="btn btn2" onclick="loadDemo()">Load Demo</button>
+      <button class="btn btnRed" onclick="clearData()">Clear</button>
+    </div>
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+  </section>
+
+  <section id="triage" class="section" role="tabpanel" aria-labelledby="nav_triage">
+    <div id="kpis" class="kpis"></div>
+    <div id="triageNotes"></div>
+    <h3>Missing Data</h3>
+    <div id="missing"></div>
+    <h3>Risk Capacity vs Risk Tolerance</h3>
+    <div id="riskBox" class="callout gold"></div>
+    <div style="margin-top:14px">
+      <button class="btn" onclick="buildPrompt();showSection('prompt')">Build AI Prompt</button>
+      <button class="btn btn2" onclick="showSection('intake')">Back to Intake</button>
+    </div>
+  </section>
+
+  <section id="prompt" class="section" role="tabpanel" aria-labelledby="nav_prompt">
+    <div class="callout gold">Copy this into ChatGPT, Claude, or any capable model to run Victor as a financial-advisor persona over your structured intake.</div>
+    <button class="btn" onclick="copyPrompt()">Copy Prompt</button>
+    <button class="btn btn2" onclick="downloadPrompt()">Download Prompt</button>
+    <pre id="promptOut"></pre>
+  </section>
+
+  <section id="framework" class="section" role="tabpanel" aria-labelledby="nav_framework">
+    <div class="callout">This is the output structure Victor should use when analyzing your finances.</div>
+    <pre id="frameworkOut"></pre>
+  </section>
+
+  </div>
+</main>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
 <script>
+"use strict";
 var ids=['location','age','household','dependents','income','stability','assets','debts','monthlySave','efund','spending','benefits','risk','goals','realEstate','constraints'];
 var labels={location:'Location / tax jurisdiction',age:'Age',household:'Household status',dependents:'Dependents',income:'Gross household income',stability:'Income stability',assets:'Current assets by account type',debts:'Current debts and interest rates',monthlySave:'Monthly savings / investing',efund:'Emergency fund',spending:'Monthly spending',benefits:'Employer benefits / retirement options',risk:'Investment experience and risk tolerance',goals:'Major goals and timelines',realEstate:'Real estate ownership or plans',constraints:'Constraints / liquidity needs'};
 var demo={location:'Pennsylvania, USA',age:'31',household:'Married filing jointly',dependents:'None currently',income:'155000',stability:'Mostly stable',assets:'Checking $4,500; HYSA $22,000; Roth IRA $18,000; 403b $32,000; HSA $3,000',debts:'Federal student loans $210,000 on IDR/PSLF track; car loan $12,000 at 5.9%; no credit card debt',monthlySave:'2500',efund:'22000',spending:'6200',benefits:'Hospital 403b with match, HSA eligible plan, group disability but no individual own-occupation policy yet.',risk:'Experienced with index funds. Comfortable with volatility intellectually, but has not lived through a major bear market as an attending-level earner.',goals:'Pay down debt intelligently, preserve PSLF optionality, buy house in 2-4 years, retire financially independent in late 50s or early 60s.',realEstate:'Currently renting. Considering primary residence purchase after contract becomes stable.',constraints:'Shift-work physician. Needs simple automation. Avoid complex strategies that require constant monitoring.'};
+
 function e(id){return document.getElementById(id)}
 function v(id){var x=e(id);return x?String(x.value||'').trim():''}
 function setv(id,val){var x=e(id);if(x){x.value=val||''}}
+
+// Tolerant numeric parser: strips $, commas, spaces; understands k/m shorthand.
+// Returns 0 for blank/garbage so downstream math never produces NaN silently.
+function parseNum(raw){
+  if(raw==null)return 0;
+  var s=String(raw).trim().toLowerCase().replace(/[$,\s]/g,'');
+  if(!s)return 0;
+  var mult=1;
+  if(/k$/.test(s)){mult=1e3;s=s.slice(0,-1);}
+  else if(/m$/.test(s)){mult=1e6;s=s.slice(0,-1);}
+  var n=parseFloat(s);
+  return isFinite(n)?n*mult:0;
+}
+function num(id){return parseNum(v(id))}
 function money(n){n=Number(n)||0;return '$'+Math.round(n).toLocaleString()}
 function pct(a,b){if(!b)return '—';return Math.round((a/b)*100)+'%'}
-function msg(t){e('status').textContent=t||''}
+function msg(t){var s=e('status');if(s)s.textContent=t||''}
+function toast(t){var el=e('toast');if(!el)return;el.textContent=t;el.classList.add('show');clearTimeout(el._h);el._h=setTimeout(function(){el.classList.remove('show')},2200);}
+
 function getData(){var d={};for(var i=0;i<ids.length;i++){d[ids[i]]=v(ids[i])}return d}
-function saveData(){try{localStorage.setItem('victorSterlingV3',JSON.stringify(getData()))}catch(err){} msg('Saved.');}
+function saveData(){try{localStorage.setItem('victorSterlingV3',JSON.stringify(getData()))}catch(err){} msg('Saved to this browser.');}
 function restoreData(){try{var d=JSON.parse(localStorage.getItem('victorSterlingV3')||'{}');for(var i=0;i<ids.length;i++){if(d[ids[i]])setv(ids[i],d[ids[i]])}}catch(err){}}
-function clearData(){if(!confirm('Clear all intake fields?'))return;for(var i=0;i<ids.length;i++)setv(ids[i],'');try{localStorage.removeItem('victorSterlingV3')}catch(err){} renderAll(); msg('Cleared.'); showSection('intake')}
-function loadDemo(){for(var i=0;i<ids.length;i++)setv(ids[i],demo[ids[i]]||''); saveData(); renderAll(); showSection('triage'); msg('Demo loaded.');}
-function testClick(){msg('Button test successful. JavaScript is running in this viewer.'); alert('Button test successful. JavaScript is running.');}
-function showSection(id){var secs=document.getElementsByClassName('section');for(var i=0;i<secs.length;i++)secs[i].className='section';e(id).className='section active';var navs=['intake','triage','prompt','framework'];for(var j=0;j<navs.length;j++){var n=e('nav_'+navs[j]);if(n)n.className=''}var active=e('nav_'+id);if(active)active.className='active';var titles={intake:'Client Intake',triage:'Financial Triage',prompt:'GPT Advisor Prompt',framework:'Plan Framework'};e('title').textContent=titles[id]||'Victor Sterling';renderAll();window.scrollTo(0,0)}
+function clearData(){if(!confirm('Clear all intake fields? This cannot be undone.'))return;for(var i=0;i<ids.length;i++)setv(ids[i],'');try{localStorage.removeItem('victorSterlingV3')}catch(err){} renderAll(); msg('Cleared.'); showSection('intake'); toast('Intake cleared');}
+function loadDemo(){for(var i=0;i<ids.length;i++)setv(ids[i],demo[ids[i]]||''); saveData(); renderAll(); showSection('triage'); msg('Demo loaded.'); toast('Demo profile loaded');}
+
+function showSection(id){
+  var secs=document.getElementsByClassName('section');
+  for(var i=0;i<secs.length;i++)secs[i].className='section';
+  e(id).className='section active';
+  var navs=['intake','triage','prompt','framework'];
+  for(var j=0;j<navs.length;j++){var n=e('nav_'+navs[j]);if(n){n.className='';n.setAttribute('aria-selected','false');}}
+  var active=e('nav_'+id);if(active){active.className='active';active.setAttribute('aria-selected','true');}
+  var titles={intake:'Client Intake',triage:'Financial Triage',prompt:'AI Advisor Prompt',framework:'Plan Framework'};
+  e('title').textContent=titles[id]||'Victor Sterling';
+  renderAll();
+  window.scrollTo(0,0);
+}
 function saveAndRun(){saveData();renderAll();showSection('triage');msg('Saved and triage calculated.');}
 function missing(){var m=[];for(var i=0;i<ids.length;i++){if(!v(ids[i]))m.push(labels[ids[i]])}return m}
-function renderTriage(){var income=Number(v('income')||0), save=Number(v('monthlySave')||0), ef=Number(v('efund')||0), spend=Number(v('spending')||0), age=Number(v('age')||0);var sr=income?(save*12)/income:0;var efm=spend?ef/spend:0;var debt=v('debts');var highDebt=/credit card|cc debt|high interest|payday|personal loan/i.test(debt);var unstable=/unstable/i.test(v('stability'));var riskCap='Undetermined';if(age&&efm>=6&&!unstable&&!highDebt)riskCap='Moderate-to-high';else if((spend&&efm<3)||unstable||highDebt)riskCap='Constrained';else if(age||income||spend||save)riskCap='Moderate';var color1=sr>=.25?'good':sr>=.15?'warn':'bad';var color2=efm>=6?'good':efm>=3?'warn':'bad';var color4=riskCap==='Constrained'?'bad':riskCap==='Moderate'?'warn':'good';e('kpis').innerHTML='<div class="kpi"><div class="num '+color1+'">'+(income?pct(save*12,income):'—')+'</div><div class="muted">Savings rate</div></div>'+'<div class="kpi"><div class="num '+color2+'">'+(spend?efm.toFixed(1)+' mo':'—')+'</div><div class="muted">Emergency fund</div></div>'+'<div class="kpi"><div class="num good">'+money(save*12)+'</div><div class="muted">Annual savings</div></div>'+'<div class="kpi"><div class="num '+color4+'">'+riskCap+'</div><div class="muted">Risk capacity</div></div>';var notes=[];if(spend&&efm<3)notes.push(['red','Emergency reserve is thin. Liquidity comes before aggressive investing.']);if(income&&sr<.15)notes.push(['red','Savings rate is the bottleneck. Portfolio tinkering will not compensate for weak cash-flow discipline.']);if(sr>=.25)notes.push(['green','Savings rate is strong. Optimization should focus on tax-advantaged space, asset location, and avoiding behavioral mistakes.']);if(highDebt)notes.push(['red','High-interest debt likely outranks taxable investing. Guaranteed interest avoidance beats speculative expected return.']);if(/match/i.test(v('benefits')))notes.push(['green','Employer match detected. Capture it before doing anything clever. Free money is not a debate.']);if(!notes.length)notes.push(['callout','Triage is limited because key numeric data is missing. Proceed only with labeled assumptions.']);var html='';for(var i=0;i<notes.length;i++){html+='<div class="callout '+notes[i][0]+'">'+notes[i][1]+'</div>'}e('triageNotes').innerHTML=html;var m=missing();if(m.length){var mh='';for(var j=0;j<m.length;j++)mh+='<span class="pill">'+m[j]+'</span>';e('missing').innerHTML=mh}else e('missing').innerHTML='<span class="pill good">No major intake fields missing</span>';e('riskBox').innerHTML='Risk capacity is estimated from age, income stability, debt burden, emergency reserves, dependents, and liquidity needs. Risk tolerance is what you say you can emotionally handle. Victor should use the lower of the two when behavior could break the plan. Current preliminary estimate: <b>'+riskCap+'</b>.';}
+
+// Detect expensive debt by BOTH keyword and parsed interest rate (>=8%),
+// excluding contexts that name a mortgage or federal/student loan.
+function detectHighInterest(debtText){
+  var t=String(debtText||'');
+  if(!t.trim())return false;
+  if(/credit card|cc debt|payday|high[- ]?interest|personal loan|store card/i.test(t))return true;
+  var segs=t.split(/[\n;,]+/);
+  for(var i=0;i<segs.length;i++){
+    var m=segs[i].match(/(\d{1,2}(?:\.\d+)?)\s*%/);
+    if(m&&parseFloat(m[1])>=8&&!/mortgage|federal|student|idr|paye|save|pslf|refinanc/i.test(segs[i]))return true;
+  }
+  return false;
+}
+// Physician-specific signals pulled from free-text fields.
+function hasMatch(){return /match/i.test(v('benefits'))}
+function hasFederalLoans(){return /federal|pslf|idr|paye|\bsave\b|public service|income[- ]driven/i.test(v('debts'))}
+function disabilityGap(){
+  var b=v('benefits').toLowerCase();
+  if(!b)return false; // unknown, not a confirmed gap
+  var mentionsDisability=/disab/i.test(b);
+  if(!mentionsDisability)return true; // benefits described but disability never mentioned
+  var ownOcc=/own[- ]?occ/i.test(b);
+  var groupOnly=/group|employer/i.test(b)&&!ownOcc;
+  var noneStated=/no (own|individual|private|disab)/i.test(b);
+  return groupOnly||noneStated||(mentionsDisability&&!ownOcc);
+}
+
+function renderTriage(){
+  var income=num('income'), save=num('monthlySave'), ef=num('efund'), spend=num('spending'), age=num('age');
+  var sr=income?(save*12)/income:0;
+  var efm=spend?ef/spend:0;
+  var highDebt=detectHighInterest(v('debts'));
+  var unstable=/unstable/i.test(v('stability'));
+
+  var riskCap='Undetermined';
+  if(age&&efm>=6&&!unstable&&!highDebt)riskCap='Moderate-to-high';
+  else if((spend&&efm<3)||unstable||highDebt)riskCap='Constrained';
+  else if(age||income||spend||save)riskCap='Moderate';
+
+  var c1=sr>=.25?'good':sr>=.15?'warn':'bad';
+  var c2=efm>=6?'good':efm>=3?'warn':'bad';
+  var c4=riskCap==='Constrained'?'bad':riskCap==='Moderate'?'warn':riskCap==='Undetermined'?'':'good';
+  var srBar=Math.max(0,Math.min(1,sr/.25))*100;
+  var efBar=Math.max(0,Math.min(1,efm/6))*100;
+
+  e('kpis').innerHTML=
+    '<div class="kpi"><div class="num '+c1+'">'+(income?pct(save*12,income):'—')+'</div><div class="muted">Savings rate</div>'+(income?'<div class="bar '+c1+'"><span style="width:'+srBar.toFixed(0)+'%"></span></div>':'')+'</div>'+
+    '<div class="kpi"><div class="num '+c2+'">'+(spend?efm.toFixed(1)+' mo':'—')+'</div><div class="muted">Emergency fund</div>'+(spend?'<div class="bar '+c2+'"><span style="width:'+efBar.toFixed(0)+'%"></span></div>':'')+'</div>'+
+    '<div class="kpi"><div class="num">'+(save?money(save*12):'—')+'</div><div class="muted">Annual savings</div></div>'+
+    '<div class="kpi"><div class="num '+c4+'">'+riskCap+'</div><div class="muted">Risk capacity</div></div>';
+
+  var notes=[];
+  // Order roughly follows Victor's physician order of operations: ruin -> debt -> income protection -> match -> loans -> savings.
+  if(spend&&efm<3)notes.push(['red','Liquidity','Emergency reserve is thin (under 3 months). Liquidity comes before aggressive investing.']);
+  if(highDebt)notes.push(['red','High-interest debt','Expensive debt detected. Guaranteed interest avoidance beats speculative expected return — attack it before taxable investing.']);
+  if(disabilityGap())notes.push(['gold','Income protection','No individual own-occupation disability coverage is confirmed. For physicians, future income is usually the largest asset. Review before optimizing the portfolio.']);
+  if(hasMatch())notes.push(['green','Employer match','Employer match detected. Capture the full match before anything clever. Free money is not a debate.']);
+  if(hasFederalLoans())notes.push(['gold','Federal loans','Federal student-loan signals detected. Model PSLF/IDR before any refinance — refinancing federal loans is usually irreversible.']);
+  if(income&&sr<.15)notes.push(['red','Savings rate','Savings rate is the bottleneck. Portfolio tinkering will not compensate for weak cash-flow discipline.']);
+  if(sr>=.25)notes.push(['green','Savings rate','Savings rate is strong. Focus on tax-advantaged space, asset location, and avoiding behavioral mistakes.']);
+  if(!notes.length)notes.push(['callout','Triage','Triage is limited because key numeric data is missing. Add income, spending, and emergency-fund figures, then re-run.']);
+
+  var html='';
+  for(var i=0;i<notes.length;i++){html+='<div class="callout '+notes[i][0]+'"><span class="tag">'+notes[i][1]+'</span>'+notes[i][2]+'</div>'}
+  e('triageNotes').innerHTML=html;
+
+  var m=missing();
+  if(m.length){var mh='';for(var j=0;j<m.length;j++)mh+='<span class="pill">'+m[j]+'</span>';e('missing').innerHTML=mh}
+  else e('missing').innerHTML='<span class="pill good">No major intake fields missing</span>';
+
+  e('riskBox').innerHTML='Risk capacity is estimated from age, income stability, debt burden, emergency reserves, dependents, and liquidity needs. Risk tolerance is what you say you can emotionally handle. Victor uses the <b>lower</b> of the two when behavior could break the plan. Current preliminary estimate: <b>'+riskCap+'</b>.';
+}
+
 function clientBlock(){var s='';for(var i=0;i<ids.length;i++){s+='- '+labels[ids[i]]+': '+(v(ids[i])||'[MISSING]')+'\n'}return s}
-function buildPromptText(){var m=missing();var miss=m.length?m.map(function(x){return '- '+x}).join('\n'):'- None from the structured intake.';return 'You are Victor Sterling, a fiercely analytical, results-oriented financial wealth strategist with 30+ years of experience across market cycles, retirement planning, tax strategy, real estate investing, and long-term portfolio construction. Your objective is to maximize long-term wealth accumulation through disciplined, evidence-based decision-making. Be direct, practical, and unsentimental. Challenge emotional, inefficient, or mathematically weak choices with clear reasoning.\n\nDo not be reckless. Distinguish among risk the client can rationally afford, risk the client merely believes they can tolerate, and risk that could permanently impair compounding, liquidity, or financial security. Behavioral discipline, liquidity needs, family obligations, taxes, and legal constraints are real financial inputs.\n\nSOURCE AND CURRENCY REQUIREMENTS:\nBefore giving specific recommendations involving taxes, contribution limits, retirement accounts, legal thresholds, interest rates, government benefits, or jurisdiction-specific rules, verify the current rules using authoritative sources. Prioritize official government tax/regulatory authorities, official retirement agencies, securities regulators, fund sponsor prospectuses, peer-reviewed research, and reputable publications only as secondary context. Do not rely on outdated brackets, limits, deductions, retirement rules, or market assumptions. If current data cannot be verified, say so explicitly.\n\nCLIENT DATA:\n'+clientBlock()+'\nMISSING DATA THAT MUST BE LABELED AS LIMITING RELIABILITY:\n'+miss+'\n\nTASK:\nProduce a wealth maximization plan. If data is insufficient for precision, proceed with clearly labeled assumptions rather than pretending certainty. Ask follow-up questions only where the answer would materially change the recommendation.\n\nUse this structure:\n1. Executive Summary: core recommendations, expected impact, major risks, highest-priority actions.\n2. Current Financial Diagnosis: strengths, weaknesses, inefficiencies.\n3. Assumptions and Missing Data.\n4. Risk Assessment: risk capacity vs risk tolerance.\n5. Recommended Portfolio Strategy.\n6. Tax Optimization Strategy.\n7. Debt Strategy.\n8. Real Estate Analysis.\n9. Insurance and Risk Controls.\n10. Action Timeline: 0-30 days, 1-12 months, 1-5 years, 5+ years.\n11. Benchmarks and Tracking.\n12. Final Recommendation: what to do first, what to stop doing, and the most damaging mistake to avoid.\n\nEnd major plans with this disclaimer: “As an AI, I provide strictly data-driven financial analysis and recommendations for informational purposes only. Emotional comfort is not a factor in my assessment, but behavior, liquidity, taxes, and legal constraints are real financial variables. This is not legally binding financial, tax, or investment advice. Consult a qualified human financial advisor, tax professional, or attorney before implementing strategies that materially affect your finances.”'}
+function buildPromptText(){
+  var m=missing();
+  var miss=m.length?m.map(function(x){return '- '+x}).join('\n'):'- None from the structured intake.';
+  return 'You are Victor Sterling, a fiercely analytical, results-oriented financial wealth strategist with 30+ years of experience across market cycles, retirement planning, tax strategy, real estate investing, and long-term portfolio construction. Your objective is to maximize long-term wealth accumulation through disciplined, evidence-based decision-making. Be direct, practical, and unsentimental. Challenge emotional, inefficient, or mathematically weak choices with clear reasoning.\n\nDo not be reckless. Distinguish among risk the client can rationally afford, risk the client merely believes they can tolerate, and risk that could permanently impair compounding, liquidity, or financial security. Behavioral discipline, liquidity needs, family obligations, taxes, and legal constraints are real financial inputs.\n\nSOURCE AND CURRENCY REQUIREMENTS:\nBefore giving specific recommendations involving taxes, contribution limits, retirement accounts, legal thresholds, interest rates, government benefits, or jurisdiction-specific rules, verify the current rules using authoritative sources. Prioritize official government tax/regulatory authorities, official retirement agencies, securities regulators, fund sponsor prospectuses, peer-reviewed research, and reputable publications only as secondary context. Do not rely on outdated brackets, limits, deductions, retirement rules, or market assumptions. If current data cannot be verified, say so explicitly.\n\nCLIENT DATA:\n'+clientBlock()+'\nMISSING DATA THAT MUST BE LABELED AS LIMITING RELIABILITY:\n'+miss+'\n\nTASK:\nProduce a wealth maximization plan. If data is insufficient for precision, proceed with clearly labeled assumptions rather than pretending certainty. Ask follow-up questions only where the answer would materially change the recommendation.\n\nUse this structure:\n1. Executive Summary: core recommendations, expected impact, major risks, highest-priority actions.\n2. Current Financial Diagnosis: strengths, weaknesses, inefficiencies.\n3. Assumptions and Missing Data.\n4. Risk Assessment: risk capacity vs risk tolerance.\n5. Recommended Portfolio Strategy.\n6. Tax Optimization Strategy.\n7. Debt Strategy.\n8. Real Estate Analysis.\n9. Insurance and Risk Controls.\n10. Action Timeline: 0-30 days, 1-12 months, 1-5 years, 5+ years.\n11. Benchmarks and Tracking.\n12. Final Recommendation: what to do first, what to stop doing, and the most damaging mistake to avoid.\n\nEnd major plans with this disclaimer: “As an AI, I provide strictly data-driven financial analysis and recommendations for informational purposes only. Emotional comfort is not a factor in my assessment, but behavior, liquidity, taxes, and legal constraints are real financial variables. This is not legally binding financial, tax, or investment advice. Consult a qualified human financial advisor, tax professional, or attorney before implementing strategies that materially affect your finances.”'
+}
 function buildPrompt(){e('promptOut').textContent=buildPromptText();}
-function copyPrompt(){buildPrompt();var txt=buildPromptText();if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){alert('Prompt copied.');},function(){fallbackCopy(txt);});}else fallbackCopy(txt)}
-function fallbackCopy(txt){var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');alert('Prompt copied.')}catch(err){alert('Clipboard blocked. Select the prompt text manually.')}document.body.removeChild(ta)}
-function downloadPrompt(){buildPrompt();var blob=new Blob([buildPromptText()],{type:'text/plain'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='victor_sterling_gpt_prompt.txt';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url)}
-function renderFramework(){e('frameworkOut').textContent='EXECUTIVE SUMMARY\n- Highest-priority actions\n- Expected impact\n- Major risks\n\nCURRENT FINANCIAL DIAGNOSIS\n- Strengths\n- Weaknesses\n- Inefficiencies\n\nASSUMPTIONS AND MISSING DATA\n- Every missing field is explicitly labeled\n- Explain how each missing item could alter the recommendation\n\nRISK ASSESSMENT\n- Risk capacity vs risk tolerance\n- Liquidity and behavior constraints\n\nPORTFOLIO STRATEGY\n- Target allocation\n- Asset roles\n- Rebalancing rules\n- Account placement\n- Benchmarks\n\nTAX OPTIMIZATION\n- Verify current jurisdiction-specific rules first\n- Traditional vs Roth\n- Employer plan / IRA / HSA / taxable brokerage\n- Tax-loss harvesting and capital gains planning\n\nDEBT STRATEGY\n- High-interest debt emergency\n- Moderate-interest debt vs after-tax expected return\n- Low-interest fixed debt only if liquidity and discipline are strong\n\nREAL ESTATE ANALYSIS\n- Cash-on-cash return\n- Cap rate\n- DSCR\n- Vacancy, maintenance, capex, management\n- Concentration and leverage risk\n\nINSURANCE AND RISK CONTROLS\n- Emergency fund\n- Health, disability, life, liability, umbrella\n- Estate documents when appropriate\n\nACTION TIMELINE\n0-30 days: immediate actions\n1-12 months: implementation\n1-5 years: scaling and optimization\n5+ years: compounding, glide path, estate/withdrawal planning\n\nFINAL RECOMMENDATION\n- What to do first\n- What to stop doing\n- The most damaging mistake to avoid';}
+
+function copyPrompt(){
+  buildPrompt();
+  var txt=buildPromptText();
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(function(){toast('Prompt copied to clipboard');},function(){fallbackCopy(txt);});
+  }else fallbackCopy(txt);
+}
+function fallbackCopy(txt){
+  var ta=document.createElement('textarea');ta.value=txt;
+  ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.focus();ta.select();
+  try{document.execCommand('copy');toast('Prompt copied to clipboard');}
+  catch(err){toast('Clipboard blocked — select the text manually');}
+  document.body.removeChild(ta);
+}
+function downloadPrompt(){
+  buildPrompt();
+  var blob=new Blob([buildPromptText()],{type:'text/plain'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='victor_sterling_gpt_prompt.txt';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Prompt downloaded');
+}
+
+function renderFramework(){
+  e('frameworkOut').textContent='EXECUTIVE SUMMARY\n- Highest-priority actions\n- Expected impact\n- Major risks\n\nCURRENT FINANCIAL DIAGNOSIS\n- Strengths\n- Weaknesses\n- Inefficiencies\n\nASSUMPTIONS AND MISSING DATA\n- Every missing field is explicitly labeled\n- Explain how each missing item could alter the recommendation\n\nRISK ASSESSMENT\n- Risk capacity vs risk tolerance\n- Liquidity and behavior constraints\n\nPORTFOLIO STRATEGY\n- Target allocation\n- Asset roles\n- Rebalancing rules\n- Account placement\n- Benchmarks\n\nTAX OPTIMIZATION\n- Verify current jurisdiction-specific rules first\n- Traditional vs Roth\n- Employer plan / IRA / HSA / taxable brokerage\n- Tax-loss harvesting and capital gains planning\n\nDEBT STRATEGY\n- High-interest debt emergency\n- Moderate-interest debt vs after-tax expected return\n- Low-interest fixed debt only if liquidity and discipline are strong\n\nREAL ESTATE ANALYSIS\n- Cash-on-cash return\n- Cap rate\n- DSCR\n- Vacancy, maintenance, capex, management\n- Concentration and leverage risk\n\nINSURANCE AND RISK CONTROLS\n- Emergency fund\n- Health, disability, life, liability, umbrella\n- Estate documents when appropriate\n\nACTION TIMELINE\n0-30 days: immediate actions\n1-12 months: implementation\n1-5 years: scaling and optimization\n5+ years: compounding, glide path, estate/withdrawal planning\n\nFINAL RECOMMENDATION\n- What to do first\n- What to stop doing\n- The most damaging mistake to avoid';
+}
+
 function renderAll(){renderTriage();buildPrompt();renderFramework()}
-window.onload=function(){restoreData();renderAll();msg('Ready. Use Test Button first if you want to confirm JavaScript is active.');};
+window.onload=function(){restoreData();renderAll();msg('Ready. Your data stays in this browser.');};
 </script>
 </body>
 </html>
