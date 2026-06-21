@@ -44,6 +44,26 @@ Selection criteria:
 - separate timeless doctrine from live, date-sensitive logic
 - define which recommendations require official-source confirmation
 
+### Started: dated rules pack (Tier 1 + 2)
+
+The HTML triage console now carries a versioned, sourced `RULES` object
+(contribution limits, catch-ups, HSA tiers, Roth phase-outs). Each value has a
+tax year, an `asOf` review date, and a source URL. The console:
+
+- shows a staleness banner whenever the figures are unverified, off-year, or
+  older than ~10 months;
+- computes deterministic tax-advantaged-space and Roth-phase-out triage from
+  those figures (no LLM needed); and
+- injects the dated figures into the generated AI prompt so the model is
+  anchored to real numbers instead of guessing.
+
+Maintenance contract: the embedded values are currently flagged `UNVERIFIED`.
+Before relying on them, confirm each against its official source, update the
+value, set `verified:true`, and bump `asOf`/`taxYear` (IRS publishes most
+limits each fall). A future Tier 3 can automate this with a scheduled check
+that opens an issue/PR when an official figure appears to change — never
+auto-applied.
+
 ## Phase 5: Assistant Experience
 
 - build Victor's response templates

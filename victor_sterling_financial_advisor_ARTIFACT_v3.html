@@ -112,6 +112,11 @@ pre{
   margin:4px;background:var(--field);color:var(--muted);font-size:.8rem;
 }
 .pill.good{color:var(--green);border-color:rgba(105,209,140,.4)}
+.refrow{display:flex;align-items:center;gap:10px;padding:8px 11px;border:1px solid var(--line);border-radius:10px;margin:6px 0;background:var(--field)}
+.refrow .lbl{flex:1 1 auto;min-width:0}
+.refrow .num2{font-weight:900;white-space:nowrap}
+.refrow a{color:var(--blue);text-decoration:none;font-size:.8rem;white-space:nowrap}
+.refrow a:hover{text-decoration:underline}
 .status{min-height:22px;color:#bff3cf;font-size:.9rem;margin-top:10px}
 .small{font-size:.82rem;color:var(--muted)}
 h3{margin:18px 0 6px;font-size:1.02rem}
@@ -191,12 +196,16 @@ noscript{display:block;background:#4a1111;color:#fff;padding:14px;text-align:cen
   </section>
 
   <section id="triage" class="section" role="tabpanel" aria-labelledby="nav_triage">
+    <div id="staleBox"></div>
     <div id="kpis" class="kpis"></div>
     <div id="triageNotes"></div>
     <h3>Missing Data</h3>
     <div id="missing"></div>
     <h3>Risk Capacity vs Risk Tolerance</h3>
     <div id="riskBox" class="callout gold"></div>
+    <h3>Current-Year Reference Figures</h3>
+    <p class="small">Contribution limits and phase-outs Victor uses for tax-advantaged-space math. These are reference values only — confirm against the cited official source before acting.</p>
+    <div id="refBox"></div>
     <div style="margin-top:14px">
       <button class="btn" onclick="buildPrompt();showSection('prompt')">Build AI Prompt</button>
       <button class="btn btn2" onclick="showSection('intake')">Back to Intake</button>
@@ -297,6 +306,90 @@ function disabilityGap(){
   return groupOnly||noneStated||(mentionsDisability&&!ownOcc);
 }
 
+// ---------------------------------------------------------------------------
+// Tier 1: dated, sourced "rules pack".
+// MAINTAINER: every value below is UNVERIFIED. Confirm each against its source
+// URL, then update the value, set verified:true, and bump asOf + taxYear.
+// The UI shows a staleness banner until taxYear === current year, asOf is
+// within ~10 months, AND verified === true. Never assert numbers you have not
+// re-checked — stale contribution limits are a silent way to give wrong advice.
+// ---------------------------------------------------------------------------
+var IRS='https://www.irs.gov/retirement-plans';
+var RULES={
+  taxYear:2025,
+  asOf:'2025-01-15',
+  verified:false,
+  limits:{
+    deferral:{value:23500,label:'401(k)/403(b) employee deferral',source:IRS},
+    deferralCatchUp:{value:7500,label:'401(k)/403(b) catch-up (age 50+)',source:IRS},
+    ira:{value:7000,label:'IRA contribution',source:IRS},
+    iraCatchUp:{value:1000,label:'IRA catch-up (age 50+)',source:IRS},
+    hsaSelf:{value:4300,label:'HSA contribution (self-only)',source:'https://www.irs.gov/publications/p969'},
+    hsaFamily:{value:8550,label:'HSA contribution (family)',source:'https://www.irs.gov/publications/p969'},
+    hsaCatchUp:{value:1000,label:'HSA catch-up (age 55+)',source:'https://www.irs.gov/publications/p969'}
+  },
+  // MAGI at/above which direct Roth IRA contributions are fully phased out.
+  rothPhaseoutUpper:{
+    'Married filing jointly':246000,
+    'Single':165000,
+    'Head of household':165000,
+    'Married filing separately':10000
+  },
+  rothSource:'https://www.irs.gov/retirement-plans/amount-of-roth-ira-contributions-that-you-can-make'
+};
+function currentYear(){return new Date().getFullYear()}
+function monthsSince(iso){var d=new Date(iso);if(isNaN(d.getTime()))return 999;return (Date.now()-d.getTime())/(1000*60*60*24*30.44)}
+function rulesStale(){return !RULES.verified||RULES.taxYear!==currentYear()||monthsSince(RULES.asOf)>10}
+function staleReason(){
+  var r=[];
+  if(!RULES.verified)r.push('the figures are flagged UNVERIFIED');
+  if(RULES.taxYear!==currentYear())r.push('they are for tax year '+RULES.taxYear+' but the current year is '+currentYear());
+  if(monthsSince(RULES.asOf)>10)r.push('they were last reviewed '+RULES.asOf);
+  return r.join('; ');
+}
+function filingStatus(){var h=v('household');return RULES.rothPhaseoutUpper[h]!==undefined?h:'Single'}
+// Default HSA coverage tier: family if married or dependents present, else self-only.
+function isFamilyHSA(){var h=v('household');var dep=v('dependents').toLowerCase();return /married filing jointly|head of household/i.test(h)||(!!dep&&!/^(none|no\b|n\/a|na\b|0)/.test(dep))}
+// Priority tax-advantaged space available this year, tailored to age/coverage.
+function taxAdvCapacity(){
+  var age=num('age'),L=RULES.limits;
+  var cap=L.deferral.value+L.ira.value+(isFamilyHSA()?L.hsaFamily.value:L.hsaSelf.value);
+  if(age>=50)cap+=L.deferralCatchUp.value+L.iraCatchUp.value;
+  if(age>=55)cap+=L.hsaCatchUp.value;
+  return cap;
+}
+// Uses gross income as a proxy for MAGI (intentionally conservative).
+function rothPhasedOut(){var inc=num('income'),up=RULES.rothPhaseoutUpper[filingStatus()];return inc>0&&!!up&&inc>up}
+function renderStaleBanner(){
+  var el=e('staleBox');if(!el)return;
+  el.innerHTML=rulesStale()?'<div class="callout red"><span class="tag">Verify</span>The reference tax/contribution figures may be outdated: '+staleReason()+'. Confirm against the official sources before acting.</div>':'';
+}
+function renderRefFigures(){
+  var el=e('refBox');if(!el)return;
+  var L=RULES.limits,fam=isFamilyHSA();
+  var rows=[L.deferral,L.deferralCatchUp,L.ira,L.iraCatchUp,(fam?L.hsaFamily:L.hsaSelf),L.hsaCatchUp];
+  rows.push({value:RULES.rothPhaseoutUpper[filingStatus()],label:'Roth IRA MAGI full phase-out ('+filingStatus()+')',source:RULES.rothSource});
+  var html='<div class="small" style="margin:0 0 8px">Tax year '+RULES.taxYear+' · reviewed '+RULES.asOf+' · '+(RULES.verified?'verified':'<b class="bad">UNVERIFIED</b>')+'</div>';
+  for(var i=0;i<rows.length;i++){
+    html+='<div class="refrow"><span class="lbl">'+rows[i].label+'</span><span class="num2">'+money(rows[i].value)+'</span><a href="'+rows[i].source+'" target="_blank" rel="noopener noreferrer">source</a></div>';
+  }
+  el.innerHTML=html;
+}
+// Dated reference block injected into the generated AI prompt so the model is
+// anchored to real, sourced figures instead of guessing them from training data.
+function refBlock(){
+  var L=RULES.limits,fam=isFamilyHSA();
+  return ['Tax year '+RULES.taxYear+' (reviewed '+RULES.asOf+', '+(RULES.verified?'verified':'UNVERIFIED — re-confirm before use')+'):',
+    '- '+L.deferral.label+': '+money(L.deferral.value),
+    '- '+L.deferralCatchUp.label+': '+money(L.deferralCatchUp.value),
+    '- '+L.ira.label+': '+money(L.ira.value),
+    '- '+L.iraCatchUp.label+': '+money(L.iraCatchUp.value),
+    '- HSA ('+(fam?'family':'self-only')+'): '+money(fam?L.hsaFamily.value:L.hsaSelf.value),
+    '- '+L.hsaCatchUp.label+': '+money(L.hsaCatchUp.value),
+    '- Roth IRA MAGI full phase-out ('+filingStatus()+'): '+money(RULES.rothPhaseoutUpper[filingStatus()]),
+    'These figures may be outdated. Verify every number against the official IRS/ED source before relying on it.'].join('\n');
+}
+
 function renderTriage(){
   var income=num('income'), save=num('monthlySave'), ef=num('efund'), spend=num('spending'), age=num('age');
   var sr=income?(save*12)/income:0;
@@ -330,6 +423,14 @@ function renderTriage(){
   if(hasFederalLoans())notes.push(['gold','Federal loans','Federal student-loan signals detected. Model PSLF/IDR before any refinance — refinancing federal loans is usually irreversible.']);
   if(income&&sr<.15)notes.push(['red','Savings rate','Savings rate is the bottleneck. Portfolio tinkering will not compensate for weak cash-flow discipline.']);
   if(sr>=.25)notes.push(['green','Savings rate','Savings rate is strong. Focus on tax-advantaged space, asset location, and avoiding behavioral mistakes.']);
+  // Tier 2: deterministic tax-advantaged-space math from the dated rules pack.
+  if(rothPhasedOut())notes.push(['gold','Roth access','At your income and filing status, direct Roth IRA contributions are likely phased out (full phase-out near '+money(RULES.rothPhaseoutUpper[filingStatus()])+' MAGI, '+RULES.taxYear+'). A backdoor Roth is usually the workaround. Uses gross income as a MAGI proxy — verify current rules.']);
+  var ann=save*12;
+  if(ann>0){
+    var capn=taxAdvCapacity();
+    if(ann<capn)notes.push(['gold','Tax-advantaged space','Your ~'+money(ann)+'/yr of saving is below the '+money(capn)+' of priority tax-advantaged space available to you this year ('+RULES.taxYear+', unverified). Filling sheltered space usually beats taxable investing.']);
+    else notes.push(['green','Tax-advantaged space','Your saving could fill the ~'+money(capn)+' of priority tax-advantaged space this year. Confirm it is actually directed into 401(k)/403(b), HSA, and IRA before taxable.']);
+  }
   if(!notes.length)notes.push(['callout','Triage','Triage is limited because key numeric data is missing. Add income, spending, and emergency-fund figures, then re-run.']);
 
   var html='';
@@ -341,13 +442,16 @@ function renderTriage(){
   else e('missing').innerHTML='<span class="pill good">No major intake fields missing</span>';
 
   e('riskBox').innerHTML='Risk capacity is estimated from age, income stability, debt burden, emergency reserves, dependents, and liquidity needs. Risk tolerance is what you say you can emotionally handle. Victor uses the <b>lower</b> of the two when behavior could break the plan. Current preliminary estimate: <b>'+riskCap+'</b>.';
+
+  renderStaleBanner();
+  renderRefFigures();
 }
 
 function clientBlock(){var s='';for(var i=0;i<ids.length;i++){s+='- '+labels[ids[i]]+': '+(v(ids[i])||'[MISSING]')+'\n'}return s}
 function buildPromptText(){
   var m=missing();
   var miss=m.length?m.map(function(x){return '- '+x}).join('\n'):'- None from the structured intake.';
-  return 'You are Victor Sterling, a fiercely analytical, results-oriented financial wealth strategist with 30+ years of experience across market cycles, retirement planning, tax strategy, real estate investing, and long-term portfolio construction. Your objective is to maximize long-term wealth accumulation through disciplined, evidence-based decision-making. Be direct, practical, and unsentimental. Challenge emotional, inefficient, or mathematically weak choices with clear reasoning.\n\nDo not be reckless. Distinguish among risk the client can rationally afford, risk the client merely believes they can tolerate, and risk that could permanently impair compounding, liquidity, or financial security. Behavioral discipline, liquidity needs, family obligations, taxes, and legal constraints are real financial inputs.\n\nSOURCE AND CURRENCY REQUIREMENTS:\nBefore giving specific recommendations involving taxes, contribution limits, retirement accounts, legal thresholds, interest rates, government benefits, or jurisdiction-specific rules, verify the current rules using authoritative sources. Prioritize official government tax/regulatory authorities, official retirement agencies, securities regulators, fund sponsor prospectuses, peer-reviewed research, and reputable publications only as secondary context. Do not rely on outdated brackets, limits, deductions, retirement rules, or market assumptions. If current data cannot be verified, say so explicitly.\n\nCLIENT DATA:\n'+clientBlock()+'\nMISSING DATA THAT MUST BE LABELED AS LIMITING RELIABILITY:\n'+miss+'\n\nTASK:\nProduce a wealth maximization plan. If data is insufficient for precision, proceed with clearly labeled assumptions rather than pretending certainty. Ask follow-up questions only where the answer would materially change the recommendation.\n\nUse this structure:\n1. Executive Summary: core recommendations, expected impact, major risks, highest-priority actions.\n2. Current Financial Diagnosis: strengths, weaknesses, inefficiencies.\n3. Assumptions and Missing Data.\n4. Risk Assessment: risk capacity vs risk tolerance.\n5. Recommended Portfolio Strategy.\n6. Tax Optimization Strategy.\n7. Debt Strategy.\n8. Real Estate Analysis.\n9. Insurance and Risk Controls.\n10. Action Timeline: 0-30 days, 1-12 months, 1-5 years, 5+ years.\n11. Benchmarks and Tracking.\n12. Final Recommendation: what to do first, what to stop doing, and the most damaging mistake to avoid.\n\nEnd major plans with this disclaimer: “As an AI, I provide strictly data-driven financial analysis and recommendations for informational purposes only. Emotional comfort is not a factor in my assessment, but behavior, liquidity, taxes, and legal constraints are real financial variables. This is not legally binding financial, tax, or investment advice. Consult a qualified human financial advisor, tax professional, or attorney before implementing strategies that materially affect your finances.”'
+  return 'You are Victor Sterling, a fiercely analytical, results-oriented financial wealth strategist with 30+ years of experience across market cycles, retirement planning, tax strategy, real estate investing, and long-term portfolio construction. Your objective is to maximize long-term wealth accumulation through disciplined, evidence-based decision-making. Be direct, practical, and unsentimental. Challenge emotional, inefficient, or mathematically weak choices with clear reasoning.\n\nDo not be reckless. Distinguish among risk the client can rationally afford, risk the client merely believes they can tolerate, and risk that could permanently impair compounding, liquidity, or financial security. Behavioral discipline, liquidity needs, family obligations, taxes, and legal constraints are real financial inputs.\n\nSOURCE AND CURRENCY REQUIREMENTS:\nBefore giving specific recommendations involving taxes, contribution limits, retirement accounts, legal thresholds, interest rates, government benefits, or jurisdiction-specific rules, verify the current rules using authoritative sources. Prioritize official government tax/regulatory authorities, official retirement agencies, securities regulators, fund sponsor prospectuses, peer-reviewed research, and reputable publications only as secondary context. Do not rely on outdated brackets, limits, deductions, retirement rules, or market assumptions. If current data cannot be verified, say so explicitly.\n\nCLIENT DATA:\n'+clientBlock()+'\nMISSING DATA THAT MUST BE LABELED AS LIMITING RELIABILITY:\n'+miss+'\n\nCURRENT-YEAR REFERENCE FIGURES (anchor your math to these, but verify before use):\n'+refBlock()+'\n\nTASK:\nProduce a wealth maximization plan. If data is insufficient for precision, proceed with clearly labeled assumptions rather than pretending certainty. Ask follow-up questions only where the answer would materially change the recommendation.\n\nUse this structure:\n1. Executive Summary: core recommendations, expected impact, major risks, highest-priority actions.\n2. Current Financial Diagnosis: strengths, weaknesses, inefficiencies.\n3. Assumptions and Missing Data.\n4. Risk Assessment: risk capacity vs risk tolerance.\n5. Recommended Portfolio Strategy.\n6. Tax Optimization Strategy.\n7. Debt Strategy.\n8. Real Estate Analysis.\n9. Insurance and Risk Controls.\n10. Action Timeline: 0-30 days, 1-12 months, 1-5 years, 5+ years.\n11. Benchmarks and Tracking.\n12. Final Recommendation: what to do first, what to stop doing, and the most damaging mistake to avoid.\n\nEnd major plans with this disclaimer: “As an AI, I provide strictly data-driven financial analysis and recommendations for informational purposes only. Emotional comfort is not a factor in my assessment, but behavior, liquidity, taxes, and legal constraints are real financial variables. This is not legally binding financial, tax, or investment advice. Consult a qualified human financial advisor, tax professional, or attorney before implementing strategies that materially affect your finances.”'
 }
 function buildPrompt(){e('promptOut').textContent=buildPromptText();}
 
