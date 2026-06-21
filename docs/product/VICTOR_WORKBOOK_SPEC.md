@@ -6,8 +6,8 @@ The workbook is not Victor's brain. It is Victor's intake and calculation engine
 
 ## Role In The Project Hierarchy
 
-1. The master authority remains [victor_sterling_financial_project_continuation_brief.md](/C:/Dev/Victor/victor_sterling_financial_project_continuation_brief.md).
-2. The physician-finance doctrine remains in [Brains/README.md](/C:/Dev/Victor/Brains/README.md) and the five core books.
+1. The master authority remains [victor_sterling_financial_project_continuation_brief.md](../../victor_sterling_financial_project_continuation_brief.md).
+2. The physician-finance doctrine remains in [Brains/README.md](../../Brains/README.md) and the five core books.
 3. This workbook exists downstream from those sources as an execution surface.
 
 ## Why Spreadsheet First
@@ -22,7 +22,7 @@ The first hard problem Victor needs to solve is structured physician-financial t
 
 Spreadsheet is the right first tool because it is stronger than markdown for numeric intake and more reliable than the current HTML artifact for day-to-day use.
 
-The interpretation rules for this workbook live in [docs/playbooks/README.md](/C:/Dev/Victor/docs/playbooks/README.md). The workbook should not be used without that reading layer.
+The interpretation rules for this workbook live in [docs/playbooks/README.md](../../docs/playbooks/README.md). The workbook should not be used without that reading layer.
 
 ## Workbook Design Principles
 

@@ -4,9 +4,9 @@ This project should be built with a strict authority order so Victor stays consi
 
 ## Authority Order
 
-1. [victor_sterling_financial_project_continuation_brief.md](/C:/Dev/Victor/victor_sterling_financial_project_continuation_brief.md)
+1. [victor_sterling_financial_project_continuation_brief.md](../../victor_sterling_financial_project_continuation_brief.md)
    This is the master file and final local source of truth for project intent, persona, doctrine, and continuation context.
-2. [Brains/README.md](/C:/Dev/Victor/Brains/README.md) plus the five source PDFs in `Brains/`
+2. [Brains/README.md](../../Brains/README.md) plus the five source PDFs in `Brains/`
    These are Victor's financial-literacy constitution.
 3. `docs/foundation/`
    Distilled operating doctrine and reusable assistant rules.

@@ -4,7 +4,7 @@ This folder is Victor's constitutional financial-literacy layer.
 
 The source order matters:
 
-1. The project-wide master file remains [victor_sterling_financial_project_continuation_brief.md](/C:/Dev/Victor/victor_sterling_financial_project_continuation_brief.md).
+1. The project-wide master file remains [victor_sterling_financial_project_continuation_brief.md](../victor_sterling_financial_project_continuation_brief.md).
 2. This `Brains/` folder is the next layer of authority.
 3. All supporting prompts, operating docs, audits, workflows, and app behavior must derive from these sources rather than override them.
 
