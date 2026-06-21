@@ -1,0 +1,74 @@
+name: Rules-pack freshness check
+
+# Tier 3 of Victor's live-intelligence plan. Reminds a human to re-verify the
+# embedded tax/contribution figures when they go stale (new tax year, old
+# review date, unverified flag) or when a cited source link rots. It never
+# edits a financial figure automatically — it only opens/updates one tracking
+# issue. Humans read the official source and apply the change on main.
+
+on:
+  schedule:
+    # 13:00 UTC on the 1st of every month. The meaningful hit is each new year
+    # (tax-year rollover) and the fall, when the IRS publishes next-year limits.
+    - cron: "0 13 1 * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: rules-freshness
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      ISSUE_TITLE: "Re-verify Victor's contribution-limit figures"
+      MARKER: "<!-- victor-rules-freshness -->"
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run freshness check
+        id: check
+        run: |
+          python3 scripts/check_rules_freshness.py
+        env:
+          FRESHNESS_REPORT: rules_freshness_report.md
+
+      - name: Open or update tracking issue
+        if: steps.check.outputs.stale == 'true'
+        run: |
+          set -euo pipefail
+          printf '%s\n\n' "$MARKER" > issue_body.md
+          cat rules_freshness_report.md >> issue_body.md
+          existing="$(gh issue list --state open --search "in:title \"$ISSUE_TITLE\"" --json number --jq '.[0].number // empty')"
+          if [ -n "$existing" ]; then
+            echo "Updating issue #$existing"
+            gh issue edit "$existing" --body-file issue_body.md
+            gh issue comment "$existing" --body "Freshness re-checked $(date -u +%Y-%m-%d): still needs attention. See updated checklist above."
+          else
+            echo "Creating new tracking issue"
+            gh issue create --title "$ISSUE_TITLE" --body-file issue_body.md
+          fi
+
+      - name: Close tracking issue when figures are current
+        if: steps.check.outputs.stale == 'false'
+        run: |
+          set -euo pipefail
+          existing="$(gh issue list --state open --search "in:title \"$ISSUE_TITLE\"" --json number --jq '.[0].number // empty')"
+          if [ -n "$existing" ]; then
+            echo "Closing issue #$existing"
+            gh issue close "$existing" --comment "Figures verified current as of $(date -u +%Y-%m-%d). Closing automatically."
+          else
+            echo "Figures current and no open issue. Nothing to do."
+          fi
+
+      - name: Upload freshness report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rules-freshness-report
+          path: rules_freshness_report.md

@@ -308,34 +308,41 @@ function disabilityGap(){
 
 // ---------------------------------------------------------------------------
 // Tier 1: dated, sourced "rules pack".
-// MAINTAINER: every value below is UNVERIFIED. Confirm each against its source
-// URL, then update the value, set verified:true, and bump asOf + taxYear.
-// The UI shows a staleness banner until taxYear === current year, asOf is
-// within ~10 months, AND verified === true. Never assert numbers you have not
+// MAINTAINER: confirm every value against its source URL each year (the IRS
+// publishes most limits in the fall), then update the value, bump asOf +
+// taxYear, and keep verified:true only while the figures are current. The UI
+// shows a staleness banner once taxYear !== current year, asOf is older than
+// ~10 months, OR verified === false. Never assert numbers you have not
 // re-checked — stale contribution limits are a silent way to give wrong advice.
+//
+// Values below verified 2026-06-21 against official IRS sources:
+//   401(k)/IRA/Roth: https://www.irs.gov/newsroom/401k-limit-increases-to-24500-for-2026-ira-limit-increases-to-7500
+//   HSA:             https://www.irs.gov/pub/irs-drop/rp-25-19.pdf (Rev. Proc. 2025-19)
 // ---------------------------------------------------------------------------
-var IRS='https://www.irs.gov/retirement-plans';
+var IRS_RET='https://www.irs.gov/newsroom/401k-limit-increases-to-24500-for-2026-ira-limit-increases-to-7500';
+var IRS_HSA='https://www.irs.gov/pub/irs-drop/rp-25-19.pdf';
 var RULES={
-  taxYear:2025,
-  asOf:'2025-01-15',
-  verified:false,
+  taxYear:2026,
+  asOf:'2026-06-21',
+  verified:true,
   limits:{
-    deferral:{value:23500,label:'401(k)/403(b) employee deferral',source:IRS},
-    deferralCatchUp:{value:7500,label:'401(k)/403(b) catch-up (age 50+)',source:IRS},
-    ira:{value:7000,label:'IRA contribution',source:IRS},
-    iraCatchUp:{value:1000,label:'IRA catch-up (age 50+)',source:IRS},
-    hsaSelf:{value:4300,label:'HSA contribution (self-only)',source:'https://www.irs.gov/publications/p969'},
-    hsaFamily:{value:8550,label:'HSA contribution (family)',source:'https://www.irs.gov/publications/p969'},
+    deferral:{value:24500,label:'401(k)/403(b) employee deferral',source:IRS_RET},
+    deferralCatchUp:{value:8000,label:'401(k)/403(b) catch-up (age 50+)',source:IRS_RET},
+    deferralCatchUp6063:{value:11250,label:'401(k)/403(b) catch-up (age 60-63)',source:IRS_RET},
+    ira:{value:7500,label:'IRA contribution',source:IRS_RET},
+    iraCatchUp:{value:1100,label:'IRA catch-up (age 50+)',source:IRS_RET},
+    hsaSelf:{value:4400,label:'HSA contribution (self-only)',source:IRS_HSA},
+    hsaFamily:{value:8750,label:'HSA contribution (family)',source:IRS_HSA},
     hsaCatchUp:{value:1000,label:'HSA catch-up (age 55+)',source:'https://www.irs.gov/publications/p969'}
   },
   // MAGI at/above which direct Roth IRA contributions are fully phased out.
   rothPhaseoutUpper:{
-    'Married filing jointly':246000,
-    'Single':165000,
-    'Head of household':165000,
+    'Married filing jointly':252000,
+    'Single':168000,
+    'Head of household':168000,
     'Married filing separately':10000
   },
-  rothSource:'https://www.irs.gov/retirement-plans/amount-of-roth-ira-contributions-that-you-can-make'
+  rothSource:IRS_RET
 };
 function currentYear(){return new Date().getFullYear()}
 function monthsSince(iso){var d=new Date(iso);if(isNaN(d.getTime()))return 999;return (Date.now()-d.getTime())/(1000*60*60*24*30.44)}
@@ -354,7 +361,8 @@ function isFamilyHSA(){var h=v('household');var dep=v('dependents').toLowerCase(
 function taxAdvCapacity(){
   var age=num('age'),L=RULES.limits;
   var cap=L.deferral.value+L.ira.value+(isFamilyHSA()?L.hsaFamily.value:L.hsaSelf.value);
-  if(age>=50)cap+=L.deferralCatchUp.value+L.iraCatchUp.value;
+  if(age>=60&&age<=63)cap+=L.deferralCatchUp6063.value+L.iraCatchUp.value; // SECURE 2.0 enhanced catch-up
+  else if(age>=50)cap+=L.deferralCatchUp.value+L.iraCatchUp.value;
   if(age>=55)cap+=L.hsaCatchUp.value;
   return cap;
 }
@@ -367,7 +375,7 @@ function renderStaleBanner(){
 function renderRefFigures(){
   var el=e('refBox');if(!el)return;
   var L=RULES.limits,fam=isFamilyHSA();
-  var rows=[L.deferral,L.deferralCatchUp,L.ira,L.iraCatchUp,(fam?L.hsaFamily:L.hsaSelf),L.hsaCatchUp];
+  var rows=[L.deferral,L.deferralCatchUp,L.deferralCatchUp6063,L.ira,L.iraCatchUp,(fam?L.hsaFamily:L.hsaSelf),L.hsaCatchUp];
   rows.push({value:RULES.rothPhaseoutUpper[filingStatus()],label:'Roth IRA MAGI full phase-out ('+filingStatus()+')',source:RULES.rothSource});
   var html='<div class="small" style="margin:0 0 8px">Tax year '+RULES.taxYear+' · reviewed '+RULES.asOf+' · '+(RULES.verified?'verified':'<b class="bad">UNVERIFIED</b>')+'</div>';
   for(var i=0;i<rows.length;i++){
@@ -382,6 +390,7 @@ function refBlock(){
   return ['Tax year '+RULES.taxYear+' (reviewed '+RULES.asOf+', '+(RULES.verified?'verified':'UNVERIFIED — re-confirm before use')+'):',
     '- '+L.deferral.label+': '+money(L.deferral.value),
     '- '+L.deferralCatchUp.label+': '+money(L.deferralCatchUp.value),
+    '- '+L.deferralCatchUp6063.label+': '+money(L.deferralCatchUp6063.value),
     '- '+L.ira.label+': '+money(L.ira.value),
     '- '+L.iraCatchUp.label+': '+money(L.iraCatchUp.value),
     '- HSA ('+(fam?'family':'self-only')+'): '+money(fam?L.hsaFamily.value:L.hsaSelf.value),

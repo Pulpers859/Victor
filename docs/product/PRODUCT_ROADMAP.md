@@ -57,12 +57,26 @@ tax year, an `asOf` review date, and a source URL. The console:
 - injects the dated figures into the generated AI prompt so the model is
   anchored to real numbers instead of guessing.
 
-Maintenance contract: the embedded values are currently flagged `UNVERIFIED`.
-Before relying on them, confirm each against its official source, update the
-value, set `verified:true`, and bump `asOf`/`taxYear` (IRS publishes most
-limits each fall). A future Tier 3 can automate this with a scheduled check
-that opens an issue/PR when an official figure appears to change — never
-auto-applied.
+Maintenance contract: confirm each value against its official source, update
+the value, set `verified:true`, and bump `asOf`/`taxYear` (IRS publishes most
+limits each fall). The embedded figures were verified for **tax year 2026** on
+2026-06-21 against official IRS sources (Notice / newsroom COLA release and
+Rev. Proc. 2025-19 for HSA).
+
+### Implemented: Tier 3 freshness automation
+
+- `scripts/check_rules_freshness.py` parses the embedded `RULES` object and
+  flags staleness when the pack is unverified, off-year, older than ~10 months,
+  or when a cited source URL has rotted. It edits no figures.
+- `.github/workflows/rules-freshness.yml` runs that check monthly (and on
+  demand) and opens/updates a single tracking issue when attention is needed,
+  closing it automatically once the figures read current. A human still reads
+  the official source and applies the value change on `main`.
+- Deliberately *not* automated: scraping IRS pages for exact dollar amounts.
+  That is brittle and false-positive-prone; the date reminder plus link check
+  is what reliably keeps the numbers honest.
+- Requires GitHub Actions to be enabled for the repository. Scheduled runs
+  fire from the default branch (`main`).
 
 ## Phase 5: Assistant Experience
 

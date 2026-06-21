@@ -33,3 +33,6 @@ node_modules/
 # Local exports / scratch work
 exports/
 scratch/
+
+# Generated freshness report (see scripts/check_rules_freshness.py)
+rules_freshness_report.md
